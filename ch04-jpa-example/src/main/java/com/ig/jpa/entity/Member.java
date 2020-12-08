@@ -20,9 +20,18 @@ public class Member {
 
     private Integer age;        //나이
 
+    /**
+     * EnumType.ORDINAL enum에 정의된 순서대로 저장
+     * EnumType.STRING enum 이름 그대로 저장(추천)
+     */
     @Enumerated(EnumType.STRING)
     private RoleType roleType;
 
+    /**
+     * TemporalType.DATE 날짜
+     * TemporalType.TIME 시간
+     * TemporalType.TIMESTAMP 날짜와 시간
+     */
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
 
@@ -31,6 +40,12 @@ public class Member {
 
     @Lob
     private String description;
+
+    /**
+     * 이 필드는 매핑하지 않는다.
+     */
+    @Transient
+    private String temp;
 
     public String getId() {
         return id;
