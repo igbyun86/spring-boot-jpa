@@ -15,6 +15,10 @@ public class Team {
 
     /**
      * 양방향 연관관계 추가
+     * mappedBy의 값으로 사용된 team은 연관관계의 주인인 Member 엔티티의 team필드를 말한다. (Member.team)
+     * 연관관계의 주인은 mappedBy 속성을 사용하지 않는다.
+     * mappedBy 속성을 사용해서 속성의 값으로 연관관계의 주인을 지정해야 한다.(= 외래키 관리자를 선택하는것)
+     * 연관관계
      */
     @OneToMany(mappedBy = "team")
     private List<Member> members = new ArrayList<>();
