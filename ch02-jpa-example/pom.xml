@@ -11,13 +11,13 @@
     <groupId>com.example</groupId>
     <artifactId>jpa</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>jpa</name>
+    <name>jpa-example2</name>
     <description>jpa example</description>
 
     <properties>
         <java.version>1.8</java.version>
         <!-- 데이터베이스 버전 -->
-        <h2db.version>1.4.187</h2db.version>
+        <h2db.version>2.1.210</h2db.version>
     </properties>
 
     <dependencies>
