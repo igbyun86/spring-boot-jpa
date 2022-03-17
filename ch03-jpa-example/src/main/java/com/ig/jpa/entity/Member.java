@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@org.hibernate.annotations.DynamicUpdate    //변경된 컬럼만 update쿼리로 작성한다.
+@org.hibernate.annotations.DynamicUpdate    //변경된 컬럼만 update쿼리로 작성한다. (기본전략은 update쿼리 작성시 모든 컬럼이 대상이다)
 @Table(name = "MEMBER")
 public class Member {
 

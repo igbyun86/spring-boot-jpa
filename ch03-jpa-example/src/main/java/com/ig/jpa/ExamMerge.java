@@ -1,7 +1,6 @@
 package com.ig.jpa;
 
 import com.ig.jpa.entity.Member;
-import com.ig.jpa.util.JpaUtil;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -19,7 +18,7 @@ public class ExamMerge {
 
     private static Member createMember(String id, String username) {
         //==영속성 컨텍스트1 시작==//
-        EntityManager em1 = JpaUtil.getEntityManagerFactory().createEntityManager();
+        EntityManager em1 = EntityManagerFactoryHelper.getInstance().createEntityManager();
         EntityTransaction tx1 = em1.getTransaction();
         tx1.begin();
 
@@ -38,7 +37,7 @@ public class ExamMerge {
 
     private static void mergeMember(Member member) {
         //==영속성 컨텍스트2 시작==//
-        EntityManager em2 = JpaUtil.getEntityManagerFactory().createEntityManager();
+        EntityManager em2 = EntityManagerFactoryHelper.getInstance().createEntityManager();
         EntityTransaction tx2 = em2.getTransaction();
 
         tx2.begin();

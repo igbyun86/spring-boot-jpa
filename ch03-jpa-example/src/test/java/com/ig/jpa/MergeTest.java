@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 @SpringBootTest
 public class MergeTest {
 
@@ -14,7 +16,7 @@ public class MergeTest {
 
     @Test
     public void mergeTest() {
-        Assertions.assertNotNull(examMerge);
+        assertNotNull(examMerge);
         examMerge.merge();
 
         /*

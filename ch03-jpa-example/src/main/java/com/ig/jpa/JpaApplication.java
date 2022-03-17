@@ -1,14 +1,12 @@
 package com.ig.jpa;
 
 import com.ig.jpa.entity.Member;
-import com.ig.jpa.util.JpaUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
 import java.util.List;
 
 @SpringBootApplication
@@ -19,7 +17,7 @@ public class JpaApplication {
 
 
         //엔티티 매니저 팩토리 생성
-        EntityManagerFactory emf = JpaUtil.getEntityManagerFactory();
+        EntityManagerFactory emf = EntityManagerFactoryHelper.getInstance();
 
         //엔티티 매니저 생성
         EntityManager em = emf.createEntityManager();
@@ -52,7 +50,7 @@ public class JpaApplication {
             Member memberA = em.find(Member.class, "id1");
             Member memberB = em.find(Member.class, "id1");
 
-            //영속 엔티티의 동일성 보장
+            //영속 엔티티의 동일성 보장(A와 B는 같은 인스턴스)
             System.out.println("동일성: " + String.valueOf(memberA == memberB));
 
             member.setAge(30);
