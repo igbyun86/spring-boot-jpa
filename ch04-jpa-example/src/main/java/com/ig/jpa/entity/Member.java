@@ -18,6 +18,7 @@ public class Member {
     @Column(name = "NAME", nullable = false, length = 10)
     private String username;    //이름
 
+    @Column(name = "AGE", columnDefinition = "integer default 0 comment '나이'")
     private Integer age;        //나이
 
     /**

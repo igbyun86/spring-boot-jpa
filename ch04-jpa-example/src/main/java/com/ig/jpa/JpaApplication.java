@@ -2,7 +2,6 @@ package com.ig.jpa;
 
 import com.ig.jpa.entity.Member;
 import com.ig.jpa.entity.Order;
-import com.ig.jpa.util.JpaUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -16,7 +15,7 @@ public class JpaApplication {
     public static void main(String[] args) {
         SpringApplication.run(JpaApplication.class, args);
 
-        EntityManagerFactory emf = JpaUtil.getEntityManagerFactory();
+        EntityManagerFactory emf = EntityManagerFactoryHelper.getInstance();
         EntityManager em = emf.createEntityManager();
         EntityTransaction tran = em.getTransaction();
         tran.begin();

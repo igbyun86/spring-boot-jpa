@@ -1,0 +1,37 @@
+@Entity
+- 기본 생성자는 필수
+- final 클래스, enum, interface, inner 클래스에는 사용할 수 없다.
+- 저장할 필드에 final을 사용하면 안된다.
+
+기본키 생성 전략
+- 직접할당: 기본키를 애플리케이션에서 직접 할당한다
+- 자동생성
+ - IDENTITY: 기본키 생성을 데이터베이스에 위임한다(PostgreSQL, SQL Server, DB2)
+   * 엔티티를 저장해야 식별자를 구할 수 있으므로 em.persist()를 호출하는 즉시 insert sql이 데이터베이스에 전달된다
+   따라서 이 전략은 트랜잭션을 지원하는 쓰기 지연이 동작하지 않는다.
+ - SEQUENCE: 데이터베이스 시쿼스를 사용해서 기본키를 할당한다(PostgreSQL, DB2, H2)
+ - TABLE: 키 생성 테이블을 사용한다.
+ - AUTO: 데이터베이스 방언에 따라 IDENTITY, SEQUENCE, TABLE 전략중 자동으로 하나를 선택
+
+***레퍼런스
+- 필드와 컬럼매핑
+  - @Column: 데이터베이스의 컬럼을 매핑
+  - @Enumerated: 자바의 enum 타입을 매핑
+  - @Temporal: 날짜 타입을 매핑
+  - @Lob: BLOB, CLOB 타입을 매핑
+  - @Transient: 특정 필드를 데이터베이스에 매핑하지 않는다
+  - @Access: JPA가 엔티티에 접근하는 방식을 지정
+
+**@Column 생략하는 경우
+int data1;              //@Column 생략
+data1 integer not null
+
+Integer data2;          //@Column 생략
+data2 integer
+
+@Column                 // @Column 사용
+int data3;
+data3 integer
+
+기본타입은 null이 허용안되기 때문에 자동으로 not null이 추가된다.
+하지만 @Column을 추가하는 경우 @Column의 nullable=true가 기본값이므로 not null 제약조건을 설정하지 않는다.
