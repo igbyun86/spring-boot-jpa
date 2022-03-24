@@ -59,6 +59,6 @@ public class Member {
         this.team = team;
 
         //양방향 연관관계를 위한 리팩토링 코드
-        team.getMembers().add(this);
+        if (team != null) team.getMembers().add(this);
     }
 }

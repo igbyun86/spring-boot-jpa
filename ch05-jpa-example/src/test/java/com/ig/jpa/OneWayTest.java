@@ -2,7 +2,7 @@ package com.ig.jpa;
 
 import com.ig.jpa.entity.Member;
 import com.ig.jpa.entity.Team;
-import com.ig.jpa.util.JpaUtil;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -16,7 +16,7 @@ public class OneWayTest {
 
     @Test
     public void 단방향_test() {
-        EntityManagerFactory emf = JpaUtil.getEntityManagerFactory();
+        EntityManagerFactory emf = EntityManagerFactoryHelper.getInstance();
         EntityManager em = emf.createEntityManager();
         EntityTransaction tran = em.getTransaction();
         tran.begin();

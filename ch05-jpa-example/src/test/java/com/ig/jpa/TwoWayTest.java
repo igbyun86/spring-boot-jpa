@@ -2,7 +2,6 @@ package com.ig.jpa;
 
 import com.ig.jpa.entity.Member;
 import com.ig.jpa.entity.Team;
-import com.ig.jpa.util.JpaUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -16,7 +15,7 @@ public class TwoWayTest {
 
     @Test
     public void 양방향_조회_test() {
-        EntityManagerFactory emf = JpaUtil.getEntityManagerFactory();
+        EntityManagerFactory emf = EntityManagerFactoryHelper.getInstance();
         EntityManager em = emf.createEntityManager();
         EntityTransaction tran = em.getTransaction();
         tran.begin();
@@ -39,7 +38,7 @@ public class TwoWayTest {
 
     @Test
     public void 양방향_연관관계_저장_test() {
-        EntityManagerFactory emf = JpaUtil.getEntityManagerFactory();
+        EntityManagerFactory emf = EntityManagerFactoryHelper.getInstance();
         EntityManager em = emf.createEntityManager();
         EntityTransaction tran = em.getTransaction();
         tran.begin();
@@ -58,6 +57,7 @@ public class TwoWayTest {
         member2.setTeam(team1);
         em.persist(member2);
 
+        //team 리팩토링하기 전으로 테스트해야함
         List<Member> members = team1.getMembers();
         System.out.println("members.size = " + members.size());
         // => members.size = 0
@@ -92,7 +92,7 @@ public class TwoWayTest {
      */
     @Test
     public void ORM_양방향_test() {
-        EntityManagerFactory emf = JpaUtil.getEntityManagerFactory();
+        EntityManagerFactory emf = EntityManagerFactoryHelper.getInstance();
         EntityManager em = emf.createEntityManager();
         EntityTransaction tran = em.getTransaction();
         tran.begin();
@@ -124,7 +124,7 @@ public class TwoWayTest {
      */
     @Test
     public void ORM_양방향_리팩토링_test() {
-        EntityManagerFactory emf = JpaUtil.getEntityManagerFactory();
+        EntityManagerFactory emf = EntityManagerFactoryHelper.getInstance();
         EntityManager em = emf.createEntityManager();
         EntityTransaction tran = em.getTransaction();
         tran.begin();
