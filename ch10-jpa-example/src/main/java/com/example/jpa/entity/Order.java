@@ -16,7 +16,7 @@ public class Order {
     @Id @GeneratedValue
     private Long id;
 
-    @Column(name = "ORDERAMOUNT")
+    @Column(name = "ORDER_AMOUNT")
     private int orderAmount;
 
     @Embedded

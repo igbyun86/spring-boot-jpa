@@ -11,6 +11,17 @@ import java.util.List;
 @Builder @ToString
 @Entity
 @Table(name = "MEMBER")
+@SqlResultSetMapping(name = "memberWithOrderCount",
+        entities = {@EntityResult(entityClass = Member.class)},
+        columns = {@ColumnResult(name = "ORDER_COUNT")}
+)
+@NamedNativeQuery(
+        name = "Member.memberSQL",
+        query = "SELECT MEMBER_ID, AGE, NAME, TEAM_ID " +
+                "FROM MEMBER WHERE AGE > ?",
+        resultClass = Member.class
+        //resultSetMapping = "memberWithOrderCount"
+)
 public class Member {
 
     @Id @GeneratedValue
@@ -27,6 +38,6 @@ public class Member {
     @JoinColumn(name = "TEAM_ID")
     private Team team;              //연관 필드(단일 값 연관 필드)
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>(); //연관 필드(컬렌션 값 연관 필드)
 }

@@ -12,5 +12,24 @@
     <named-query name="Member.count">
         <query>select count(m) from Member m</query>
     </named-query>
+    
+    <!-- 네이티브 sql xml 정의 -->
+    <named-native-query name="Member.memberWithOrderCountXml" result-set-mapping="memberWithOrderCountResultMap">
+        <query><![CDATA[
+            SELECT  M.MEMBER_ID, AGE, NAME, TEAM_ID, I.ORDER_COUNT
+            FROM    MEMBER M
+            LEFT JOIN (
+                    SELECT M.MEMBER_ID, COUNT(1) AS ORDER_COUNT
+                    FROM ORDERS O, MEMBER M
+                    WHERE O.MEMBER_ID = M.MEMBER_ID
+            ) I
+            ON I.MEMBER_ID = M.MEMBER_ID
+        ]]></query>
+    </named-native-query>
+    
+    <sql-result-set-mapping name="memberWithOrderCountResultMap">
+        <entity-result entity-class="com.example.jpa.entity.Member" />
+        <column-result name="ORDER_COUNT" />
+    </sql-result-set-mapping>
 
 </entity-mappings>
