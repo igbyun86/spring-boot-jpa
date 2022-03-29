@@ -3,6 +3,7 @@
 
     <!-- 영속성 unit -->
     <persistence-unit name="jpabook">
+        <mapping-file>META-INF/ormMember.xml</mapping-file>
         <properties>
             <!-- H2 데이터베이스 드라이버 및 설정 -->
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>

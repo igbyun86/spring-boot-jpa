@@ -11,7 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -221,11 +220,80 @@ public class JoinTest {
         EntityTransaction tran = em.getTransaction();
         tran.begin();
 
-        String query = "SELECT t FROM Team t JOIN FETCH t.members";
+        String query = "SELECT t FROM Team t JOIN FETCH t.members where t.name = 'teamA'";
         List<Team> resultList = em.createQuery(query, Team.class)
+                .getResultList();
+
+        //team에 있는 memeber 수만큼 조회된다.
+
+        resultList.forEach(t -> {
+            System.out.println("teamname = " + t.getName() + ", team = " + t);
+
+            t.getMembers().forEach(m -> {
+                System.out.println("->username = " + m.getUsername() + ", member = " + m);
+            });
+        });
+
+        tran.commit();
+        em.close();
+    }
+
+    @Test
+    @DisplayName("컬렉션 페치 조인 distinct")
+    void selectCollectionFetchJoinDistinctTest() {
+        EntityManagerFactory emf = EntityManagerFactoryHelper.getInstance();
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tran = em.getTransaction();
+        tran.begin();
+
+        String query = "SELECT distinct t FROM Team t JOIN FETCH t.members where t.name = 'teamA'";
+        List<Team> resultList = em.createQuery(query, Team.class)
+                .getResultList();
+
+        //team에 있는 memeber 수만큼 조회된다.
+
+        resultList.forEach(t -> {
+            System.out.println("teamname = " + t.getName() + ", team = " + t);
+
+            t.getMembers().forEach(m -> {
+                System.out.println("->username = " + m.getUsername() + ", member = " + m);
+            });
+        });
+
+        tran.commit();
+        em.close();
+    }
+
+    @Test
+    @DisplayName("경로 표현식")
+    void selectFieldTest() {
+        EntityManagerFactory emf = EntityManagerFactoryHelper.getInstance();
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tran = em.getTransaction();
+        tran.begin();
+
+        String query = "SELECT o.member.team FROM Order o where o.product.name = 'productA' and o.address.city = 'SEOUL'";
+        em.createQuery(query)
                 .getResultList();
 
         tran.commit();
         em.close();
+
+        /*
+        Hibernate:
+            select
+                team2_.TEAM_ID as team_id1_3_,
+                team2_.NAME as name2_3_
+            from ORDERS order0_ cross
+            join MEMBER member1_
+            inner join TEAM team2_
+            on member1_.TEAM_ID=team2_.TEAM_ID cross
+            join Product product3_
+            where   order0_.MEMBER_ID=member1_.MEMBER_ID
+            and     order0_.PRODUCT_ID=product3_.PRODUCT_ID
+            and     product3_.NAME='productA'
+            and     order0_.CITY='SEOUL'
+
+         */
     }
 }
