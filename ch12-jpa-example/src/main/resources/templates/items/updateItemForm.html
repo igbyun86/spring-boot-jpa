@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" th:href="@{/assets/ico/favicon.png}">
+
+    <title>Narrow Jumbotron Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link th:href="@{/css/bootstrap.css}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link th:href="@{/css/jumbotron-narrow.css}" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script th:src="@{/assets/js/html5shiv.js}"></script>
+    <script th:src="@{/assets/js/respond.min.js}"></script>
+    <![endif]-->
+    <script th:src="@{/assets/js/jquery.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <ul class="nav nav-pills pull-right">
+            <li><a href="/">Home</a></li>
+        </ul>
+        <a href="/"><h3 class="text-muted">HELLO SHOP</h3></a>
+    </div>
+
+    <form role="form" method="post">
+        <!-- id -->
+        <input type="hidden" name="id" th:value="${item.id}">
+
+        <div class="form-group">
+            <label for="name">상품명</label>
+            <input type="text" name="name" class="form-control" id="name" placeholder="이름을 입력하세요" th:value="${item.name}">
+        </div>
+        <div class="form-group">
+            <label for="price">가격</label>
+            <input type="number" name="price" class="form-control" id="price" placeholder="가격을 입력하세요" th:value="${item.price}">
+        </div>
+        <div class="form-group">
+            <label for="stockQuantity">수량</label>
+            <input type="number" name="stockQuantity" class="form-control" id="stockQuantity" placeholder="수량을 입력하세요" th:value="${item.stockQuantity}">
+        </div>
+        <div class="form-group">
+            <label for="author">저자</label>
+            <input type="text" name="author" class="form-control" id="author" placeholder="저자를 입력하세요" th:value="${item.author}">
+        </div>
+        <div class="form-group">
+            <label for="isbn">ISBN</label>
+            <input type="text" name="isbn" class="form-control" id="isbn" placeholder="ISBN을 입력하세요" th:value="${item.isbn}">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+    </form>
+<br/>
+    <div class="footer">
+        <p>&copy; Hello Shop 2022</p>
+    </div>
+
+</div> <!-- /container -->
+
+</body>
+</html>
