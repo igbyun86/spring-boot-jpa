@@ -1,0 +1,189 @@
+-스프링 컨테이너의 기본 전략
+스프링 컨테이너는 트랜잭션 범위의 영속성 컨텍스트 전략을 기본으로 사용한다.
+
+    Filter      -> Controller   ->  Service ->Repository
+  Interceptor
+|---------- 준영속 상태 ----------|------- 영속 상태-------|
+                                |----- 트랜잭션 범위 -----|
+
+-트랜잭션이 같으면 같은 영속성 컨텍스트를 사용한다.
+ 다양한 위치에서 엔티티 매니저를 주입받아 사용해도 트랜잭션이 같으면 항상 같은 영속성 컨텍스트를 사용한다.
+
+-트랜잭션이 다르면 트랜잭션에 따라 접근하는 영속성 컨텍스트가 다르다.
+
+-준영속 상태와 지연 로딩
+class OrderController {
+    public String view(Long orderId) {
+        Order order = orderService.findBy(orderId);
+        Member member = order.getMember();
+        member.getName();       //지연 로딩 시 예외 발생
+    }
+}
+준영속 상태는 영속성 컨텍스트가 없으므로 지연 로딩을 할 수 없다.
+이때 지연 로딩을 시도하면 예외가 발생한다.
+
+-준영속 상태의 지연로딩 해결방법
+ 1.글로벌 페치 전략 수정
+
+ //주문 엔티티를 조회하면 연관된 member 엔티티도 항상 함께 로딩한다.
+ @Entity
+ public class Order {
+
+    @Id @GeneratedValue
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.EAGER)     //즉시 로딩 전략
+    private Member member;
+ }
+
+ ※글로벌 페치 전략에 즉시 로딩 사용 시 단점
+ -사용하지 않는 엔티티를 로딩한다.
+ -N+1 문제가 발생한다.
+
+ 2.JPQL 페치 조인
+ JPQL:
+    select o
+    from Order o
+    join fetch o.member
+ SQL:
+    select o.*, m.*
+    from Order o
+    join Member m on o.MEMBER_ID = m.MEMBER_ID
+ 페치 조인을 사용하면 sql join을 사용해서 페치 조인 대상까지 함께 조회하기 대문에 N+1 문제가 발생하지 않는다.
+
+ ※JPQL 페치 조인의 단점
+ 무분별하게 사용하면 화면에 맞춘 리파지토리 메소드가 증가할 수 있다.
+
+ 3.강제로 초기화
+ :영속성 컨텍스트가 살아있을 때 프리젠테이션 계층이 필요한 엔티티를 강제로 초기화해서 반환하는 방법이다.
+
+ class OrderService {
+
+    @Transactional
+    public Order findOrder(id) {
+        Order order = orderRepository.findOrder(id);
+        order.getMember().getName();        //프록시 객체를 강제로 초기화한다.
+        return order;
+    }
+ }
+
+ 프록시를 초기화하는 역할을 서비스 계층이 담당하면 뷰가 필요한 엔티티에 따라 서비스 계층의 로직을 변경해야 한다.
+ 서비스 계층은 비즈니스 로직을 담당해야지 프리젠테이션 계층으르 위한 일까지 하는 것은 좋지 않다.
+ 따라서 프록시 초기화 역할을 분리하기 위해 FACADE 계층이 그 역할을 담당해줄 것이다.
+
+ 4.FACADE 계층 추가
+
+     Filter      -> Controller   ->   Facade  ->  Service ->Repository
+   Interceptor
+ |---------- 준영속 상태 ----------|------------- 영속 상태 -------------|
+                                 |------------ 트랜잭션범위 ------------|
+
+ Facade 계층의 역할과 특징
+ -프리젠테이션 계층과 도메인 모델 계층 간의 논리적 의존성을 분리해준다.
+ -프리젠테이션 계층에서 필요한 프록시 객체를 초기화한다.
+ -서비스 계층을 호출해서 비즈니스 로직을 실행한다.
+ -리파지토리를 직접 호출해서 뷰가 요구하는 엔티티를 찾는다.
+
+ class OrderFacade {
+
+    @Autowired
+    OrderService orderService;
+
+    public Order findOrder(Long id) {
+        Order order = orderService.findOrder(id);
+
+        //프리젠테이션 계층이 필요한 프록시 객체를 강제로 초기화한다.
+        order.getMember().getName();
+        return order;
+    }
+ }
+
+ class OrderService {
+    public Order findOrder(Long id) {
+        return orderRepository.findOrder(id);
+    }
+ }
+
+위와 같은 방법이 있지만 관리하기가 쉽지 않다...
+모든 문제는 엔티티가 프리젠테이션 계층에서 준영속 상태이기 때문에 발생한다.
+뷰에서도 지연로딩을 사용할 수 있는데 이것이 OSIV다.
+
+------------------------------------------------------------------------------------------------------------------------
+-OSIV
+:영속성 컨텍스트를 뷰까지 열어둔다는 뜻이다.
+
+과거 OSIV
+:트랜잭션 범위를 확장해 요청진입부터 영속 상태로 만든다.
+
+    Filter      -> Controller   ->  Service ->Repository
+  Interceptor
+|---------------------- 영속 상태------------------------|
+|-------------------- 트랜잭션 범위 ----------------------|
+
+※요청 당 트랜잭션 방식의 OSIV 문제점
+-컨트롤러나 뷰 같은 프리젠테이션 계층이 엔티티를 변경할 수 있다.
+
+-프리젠테이션 계층에서 엔티티를 수정하지 못하게 막는 방법
+ -엔티티를 읽기 전용 인터페이스로 제공
+ -엔티티 래핑
+ -DTO만 반환
+ 여러가지 문제들로 최근에는 거의 사용하지 않는다.
+
+
+-스프링 OSIV: 비즈니스 계층 트랜잭션
+
+|---------------- 영속성 컨텍스트 생존 범위 ----------------|
+    Filter      -> Controller   ->  Service ->Repository
+  Interceptor
+                                |----- 트랜잭션 범위 -----|
+|---- 영속 상태(수정 불가능) ------|--- 영속 상태(수정 가능)--|
+
+1.클라이언트의 요청이 들어오면 서블릿 필터나, 스프링 인터셉터에서 영속성 컨텍스트를 생성한다.
+  단 이때 트랜잭션은 시작하지 않는다.
+2.서비스 계층에서 @Transactional로 트랜잭션을 시작할 때 1번에서 미리 생성해둔 영속성 컨텍스트를
+  찾아와 서 트랜잭션을 시작한다.
+3.서비스 계층이 끝나면 트랜잭션을 커밋하고 영속성 컨텍스트를 플러시한다.
+  이때 트랜잭션은 끝나지만 영속성 컨텍스트는 종료하지 않는다.
+4.컨트롤러와 뷰까지 영속성 컨텍스트가 유지되므로 조회한 엔티티는 영속 상태를 유지한다.
+5.서블릿 필터나 스프링 인터셉터로 요청이 돌아오면 영속성 컨텍스트를 종료한다.
+  이때 플러시를 호출하지 않고 바로 종료한다.
+
+-트랜잭션 없이 읽기
+:트랜잭션 범위 밖에서 엔티티를 변경하지 않고 단순히 조회
+
+※스프링 OSIV 정리
+ -영속성 컨텍스트를 프리젠테이션 계층까지 유지한다.
+ -프리젠테이션 계층에는 트랜잭션이 없으므로 엔티티를 수정할 수 없다.
+ -프리젠테이션 계층에는 트랜잭션이 없지만 트랜잭션 없이 읽기를 사용해서 지연 로딩을 할 수 있다.
+
+※스프링 OSIV 주의사항
+
+class MemberContoller {
+
+    public String viewMember(Long id) {
+        Member member = memberService.getMember(id);
+        member.setName("XXX");  //보안상의 이유로 고객 이름을 XXX로 변경했다.
+
+        memberService.biz();
+        return "view";
+    }
+
+}
+
+class MemberService {
+
+    @Transacional
+    public void biz() {
+        //... 비즈니스 로직 실행
+    }
+}
+
+1.컨토롤러에서 회원 엔티티를 조회하고 이름을 member.setName("XXX")로 수정했다.
+2.biz() 메서드를 실행해서 트랜잭션이 있는 비즈니스 로직을 실행했다.
+3.트랜잭션 AOP가 동작하면서 영속성 컨텍스트에 트랜잭션을 시작한다. 그리고 biz() 메서드를 실행한다.
+4.biz() 메서드가 끝나면 트랜잭션 AOP는 트랜잭션을 커밋하고 영속성 컨텍스트를 플러시한다.
+  이때 변경 감지가 동작하면서 회원 엔티티의 수정 사항을 데이터베이스에 반영한다.
+
+-해결방법
+ 비즈니스 로직을 먼저 호출하고 그 결과를 조회하는 순서로 실행한다.
+
