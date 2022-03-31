@@ -1,0 +1,55 @@
+-컬렉션
+Collenction, List(중복 O, 순서 X)
+-org.hibernate.collection.internal.PersistentBag
+
+Collection, List는 엔티티를 추가할 때 중복된 엔티티가 있는지 비교하지 않고 단순히 저장만 하면 된다.
+따라서 엔티티를 추가해도 지연 로딩된 컬렉션으르 초기화하지 않는다.
+
+Set(중복 X, 순서 X)
+-org.hibernate.collection.internal.PersistentSet
+
+Set은 엔티티를 추가할 때 중복된 엔티티가 있는지 비교해야 한다.
+따라서 엔티티를 추가할 때 지연 로딩된 컬렉션을 초기화한다.
+
+
+List + @OrderColumn(중복 O, 순서 O)
+-org.hibernate.collection.internal.PersistentList
+
+데이터베이스에 순서 값을 저장해서 조회할 때 사용
+단점이 많아 실무에서 거의 사용하지 않는다.
+
+@OrderBy
+데이터베이스의 ORDER BY 절을 사용해서 컬렉션을 정렬한다.
+
+@Entity
+public class Team {
+
+    @Id @GeneratedValue
+    private Long id;
+
+    @OneToMany(mappedBy="team")
+    @OrderBy("username desc, id asc")
+    private Set<Member> members = new HashSet<>();
+}
+
+@OrderBy의 값은 JPQL의 order by 절처럼 엔티티의 필드를 대상으로 한다.
+
+@Converter
+엔티티의 데이터를 변환해서 데이터베이스에 저장할 수 있다.
+예) true/false -> db저장할 때 값을  1/0 또는 Y/N으로 변경하여 저장할 수 있다.
+
+-리스너
+리스너 이벤트 호출 순서
+1.기본 리스너
+2.부모 클래스 리스너
+3.리스너
+4.엔티티
+
+-엔티티 그래프
+:엔티티 조회시점에 연관된 엔티티들을 함께 조회하는 기능
+
+※정리
+-ROOT에서 시작
+-이미 로딩된 엔티티(엔티티가 이미 로딩되어 있으면 엔티티 그래프가 적용되지 않는다.)
+
+
