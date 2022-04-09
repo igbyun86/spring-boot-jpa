@@ -6,10 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Getter @Setter
@@ -33,6 +32,8 @@ public class Member {
     @Column(name = "AGE")
     private int age;                //상태 필드
 
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    private List<Order> orders = new ArrayList<>();
 
     // name을 기준으로 equals 비교
     /*

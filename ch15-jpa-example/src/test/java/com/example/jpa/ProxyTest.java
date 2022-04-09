@@ -2,10 +2,11 @@ package com.example.jpa;
 
 
 import com.example.jpa.entity.Member;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import com.example.jpa.entity.OrderItem;
+import com.example.jpa.entity.item.Book;
+import com.example.jpa.entity.item.Item;
+import org.hibernate.proxy.HibernateProxy;
+import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.persistence.EntityManager;
@@ -105,6 +106,167 @@ public class ProxyTest {
 
         assertTrue(refMember instanceof Member);
         assertTrue(newMember.equals(refMember));
+    }
+
+
+    @Test
+    void 부모타입으로_프록시조회()  {
+        Book saveBook = new Book();
+        saveBook.setName("jpabook");
+        saveBook.setAuthor("ig");
+        em.persist(saveBook);
+
+        em.flush();
+        em.clear();
+
+        //테스트 시작
+        Item proxyItem = em.getReference(Item.class, saveBook.getId());
+        System.out.println("proxyItem = " + proxyItem.getClass());
+        //proxyItem = class com.example.jpa.entity.item.Item$HibernateProxy$II2fqExK
+
+        if (proxyItem instanceof Book) {
+            System.out.println("proxyItem instanceof Book");
+            Book book = (Book) proxyItem;
+            System.out.println("책 저자 = " + book.getAuthor());
+        }
+
+        assertFalse(proxyItem.getClass() == Book.class);
+        assertFalse(proxyItem instanceof Book);
+        assertTrue(proxyItem instanceof Item);
+    }
+
+    @Test
+    void 상속관계와_프록시_도메인모델() {
+        //테스트 데이터 준비
+        Book book = new Book();
+        book.setName("jpabook");
+        book.setAuthor("ig");
+        em.persist(book);
+
+        OrderItem saveOrderItem = new OrderItem();
+        saveOrderItem.setItem(book);
+        em.persist(saveOrderItem);
+
+        em.flush();
+        em.clear();
+
+        //테스트 시작
+        OrderItem orderItem = em.find(OrderItem.class, saveOrderItem.getId());
+        Item item = orderItem.getItem();
+
+        System.out.println("item = " + item.getClass());
+        //item = class com.example.jpa.entity.item.Item$HibernateProxy$JKb7J11y
+
+        //결과검증
+        assertFalse(item.getClass() == Book.class); //지연로딩으로 Book class의 정보를 가져올 수 없다.
+        assertFalse(item instanceof Book);
+        assertTrue(item instanceof Item);
+    }
+
+    @Test
+    @DisplayName("프록시해결1-프록시 벗기기")
+    void proxySolutionTest1() {
+        //테스트 데이터 준비
+        Book saveBook = new Book();
+        saveBook.setName("jpabook");
+        saveBook.setAuthor("ig");
+        em.persist(saveBook);
+
+        OrderItem saveOrderItem = new OrderItem();
+        saveOrderItem.setItem(saveBook);
+        em.persist(saveOrderItem);
+
+        em.flush();
+        em.clear();
+
+        //테스트 시작
+        OrderItem orderItem = em.find(OrderItem.class, saveOrderItem.getId());
+        Item item = orderItem.getItem();
+
+        Item unProxyItem = unProxy(item);
+
+        System.out.println("item = " + item.getClass());
+        //item = class com.example.jpa.entity.item.Item$HibernateProxy$JKb7J11y
+
+        System.out.println("item = " + unProxyItem.getClass());
+        //item = class com.example.jpa.entity.item.Book
+
+        if (unProxyItem instanceof Book) {
+            System.out.println("proxyItem instanceof Book");
+            Book book = (Book) unProxyItem;
+            System.out.println("책 저자 = " + book.getAuthor());
+        }
+
+        //결과검증
+        assertFalse(item.getClass() == Book.class); //지연로딩으로 Book class의 정보를 가져올 수 없다.
+        assertFalse(item instanceof Book);
+        assertTrue(item instanceof Item);
+
+        assertTrue(item != unProxyItem);
+    }
+
+    /**
+     * 하이버네이트가 제공하는 프록시에서 원본 엔티티를 찾는 기능을 사용하는 메서드
+     * @param entity
+     * @param <T>
+     * @return
+     */
+    public static <T> T unProxy(Object entity) {
+        if (entity instanceof HibernateProxy) {
+            entity = ((HibernateProxy) entity)
+                    .getHibernateLazyInitializer()
+                    .getImplementation();
+
+        }
+
+        return (T) entity;
+    }
+
+
+    @Test
+    @DisplayName("프록시해결2-프록시 인터페이스 제공")
+    void proxySolutionTest2() {
+        //테스트 데이터 준비
+        Book saveBook = new Book();
+        saveBook.setName("jpabook");
+        saveBook.setAuthor("ig");
+        em.persist(saveBook);
+
+        OrderItem saveOrderItem = new OrderItem();
+        saveOrderItem.setItem(saveBook);
+        em.persist(saveOrderItem);
+
+        em.flush();
+        em.clear();
+
+        //테스트 시작
+        OrderItem orderItem = em.find(OrderItem.class, saveOrderItem.getId());
+        orderItem.printItem();  //특정 기능을 제공하는 인터페이스 사용
+        //TITLE=[제목:]jpabook 저자:ig]
+    }
+
+    @Test
+    @DisplayName("Visitor 패턴 해결")
+    void 상속관계와_프록시_VsitorPattern() {
+        //테스트 데이터 준비
+        Book saveBook = new Book();
+        saveBook.setName("jpabook");
+        saveBook.setAuthor("ig");
+        em.persist(saveBook);
+
+        OrderItem saveOrderItem = new OrderItem();
+        saveOrderItem.setItem(saveBook);
+        em.persist(saveOrderItem);
+
+        em.flush();
+        em.clear();
+
+        OrderItem orderItem = em.find(OrderItem.class, saveOrderItem.getId());
+        Item item = orderItem.getItem();
+
+        //PrintVisitor
+        item.accept(new PrintVisitor());
+
     }
 
 
